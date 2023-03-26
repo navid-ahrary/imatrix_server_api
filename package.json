@@ -1,0 +1,69 @@
+{
+  "name": "imatrix_server_api",
+  "version": "0.0.1",
+  "description": "imatrix_server_api",
+  "keywords": [
+    "loopback-application",
+    "loopback"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": "14 || 16 || 18 || 19"
+  },
+  "scripts": {
+    "build": "lb-tsc",
+    "build:watch": "lb-tsc --watch",
+    "lint": "yarn run eslint && yarn run prettier:check",
+    "lint:fix": "yarn run eslint:fix && yarn run prettier:fix",
+    "prettier:cli": "lb-prettier \"**/*.ts\" \"**/*.js\"",
+    "prettier:check": "yarn run prettier:cli -l",
+    "prettier:fix": "yarn run prettier:cli --write",
+    "eslint": "lb-eslint --report-unused-disable-directives .",
+    "eslint:fix": "yarn run eslint --fix",
+    "pretest": "yarn run rebuild",
+    "posttest": "yarn run lint",
+    "premigrate": "yarn run build",
+    "migrate": "node ./dist/migrate",
+    "preopenapi-spec": "yarn run build",
+    "openapi-spec": "node ./dist/openapi-spec",
+    "prestart": "yarn run rebuild",
+    "start": "node -r source-map-support/register .",
+    "clean": "lb-clean dist *.tsbuildinfo .eslintcache",
+    "rebuild": "yarn run clean && yarn run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "Navid Ahrary <navid.ahrary@outlook.com>",
+  "license": "ISC",
+  "files": [
+    "README.md",
+    "dist",
+    "src",
+    "!*/__tests__"
+  ],
+  "dependencies": {
+    "@loopback/boot": "^5.0.9",
+    "@loopback/core": "^4.0.9",
+    "@loopback/repository": "^5.1.4",
+    "@loopback/rest": "^12.0.9",
+    "@loopback/rest-explorer": "^5.0.9",
+    "@loopback/service-proxy": "^5.0.9",
+    "better-sqlite3": "^8.2.0",
+    "dotenv": "^16.0.3",
+    "tslib": "^2.0.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@loopback/build": "^9.0.9",
+    "@loopback/eslint-config": "^13.0.9",
+    "@loopback/testlab": "^5.0.9",
+    "@types/better-sqlite3": "^7.6.3",
+    "@types/node": "^14.18.36",
+    "eslint": "^8.35.0",
+    "source-map-support": "^0.5.21",
+    "typescript": "~4.9.4"
+  }
+}
