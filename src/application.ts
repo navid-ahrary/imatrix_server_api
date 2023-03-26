@@ -5,10 +5,7 @@ import {BootMixin} from '@loopback/boot';
 import {ApplicationConfig} from '@loopback/core';
 import {RepositoryMixin} from '@loopback/repository';
 import {RestApplication} from '@loopback/rest';
-import {
-  RestExplorerBindings,
-  RestExplorerComponent,
-} from '@loopback/rest-explorer';
+import {RestExplorerBindings, RestExplorerComponent} from '@loopback/rest-explorer';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 import {MySequence} from './sequence';
@@ -20,6 +17,8 @@ export class ImatrixServerApiApplication extends BootMixin(
 ) {
   constructor(options: ApplicationConfig = {}) {
     super(options);
+
+    this.verifyEnvVars();
 
     // Set up the custom sequence
     this.sequence(MySequence);
@@ -45,11 +44,15 @@ export class ImatrixServerApiApplication extends BootMixin(
     };
   }
 
-  validateEnvVar() {
-    const SQLITE_FILE = process.env.SQLITE_FILE;
+  verifyEnvVars() {
+    const {DOMAIN, SQLITE_FILE, PORT_RANGE} = process.env;
 
-    if (SQLITE_FILE) {
-      throw new Error('Environment variable "SQLITE_FLIE" not provided!');
-    }
+    const errs = [];
+
+    if (!DOMAIN) errs.push('DOMAIN');
+    if (!SQLITE_FILE) errs.push('SQLITE_FILE');
+    if (!PORT_RANGE) errs.push('PORT_RANGE');
+
+    if (errs.length) throw new Error(`${errs.join(', ')} must be provided!`);
   }
 }
