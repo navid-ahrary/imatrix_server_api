@@ -34,7 +34,7 @@ export class AuthenticatorInterceptor implements Provider<Interceptor> {
    */
   async intercept(invocationCtx: InvocationContext, next: () => ValueOrPromise<InvocationResult>) {
     try {
-      const providedApiKey = this.request.headers.apiKey;
+      const providedApiKey = this.request.headers.apikey;
 
       if (providedApiKey !== this.API_KEY) {
         const errMsg = `Unauthorized : ${providedApiKey}`;
