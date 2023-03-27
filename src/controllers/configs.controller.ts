@@ -1,9 +1,15 @@
 /* eslint-disable no-useless-catch */
-import {service} from '@loopback/core';
+import {intercept, service} from '@loopback/core';
 import {get, getModelSchemaRef, HttpErrors, param, patch, post, requestBody} from '@loopback/rest';
+import {AuthenticatorInterceptor} from '../interceptors';
 import {Inbounds} from '../models';
 import {V2RayService} from '../services';
 
+enum Protocol {
+  'VLESS_WS' = 'vless-ws',
+}
+
+@intercept(AuthenticatorInterceptor.BINDING_KEY)
 export class ConfigsController {
   constructor(@service(V2RayService) private v2RayService: V2RayService) {}
 
@@ -33,7 +39,7 @@ export class ConfigsController {
     return new Inbounds(inbound[0]);
   }
 
-  @post('/configs/vless-ws', {
+  @post('/configs', {
     responses: {
       200: {
         content: {
@@ -53,15 +59,26 @@ export class ConfigsController {
       },
     },
   })
-  async createConfigs(@param.query.number('trafficInGb', {required: true}) trafficInGb: number) {
+  async createConfigs(
+    @param.query.string('protocol', {required: true, schema: {enum: Object.values(Protocol)}})
+    protocol: Protocol,
+    @param.query.number('trafficInGb', {required: true}) trafficInGb: number,
+  ) {
     try {
-      const connString = await this.v2RayService.generateVlessWS(trafficInGb);
+      let connString: string;
+
+      if (protocol === Protocol.VLESS_WS) {
+        connString = await this.v2RayService.generateVlessWS(trafficInGb);
+      } else {
+        throw new Error(`Protocol ${protocol} not supported!`);
+      }
 
       return {
         connectionString: connString,
       };
     } catch (err) {
-      throw new HttpErrors.UnsupportedMediaType(err.message);
+      console.error(err.message);
+      throw new HttpErrors.UnprocessableEntity(err.message);
     }
   }
 
@@ -96,10 +113,10 @@ export class ConfigsController {
       const result = await this.v2RayService.charge(configName, reqBody.trafficInGb);
 
       if (result.changes === 0) {
-        throw new HttpErrors.NotFound(`Config "${configName}" not found!`);
+        throw new HttpErrors.NotFound(`404: "${configName}" not found!`);
       }
     } catch (err) {
-      console.log(err.message);
+      console.error(err.message);
       throw err;
     }
   }

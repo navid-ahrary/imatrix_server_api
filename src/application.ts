@@ -45,10 +45,11 @@ export class ImatrixServerApiApplication extends BootMixin(
   }
 
   verifyEnvVars() {
-    const {DOMAIN, SQLITE_FILE, PORT_RANGE} = process.env;
+    const {API_KEY, DOMAIN, SQLITE_FILE, PORT_RANGE} = process.env;
 
     const errs = [];
 
+    if (!API_KEY) errs.push('API_KEY');
     if (!DOMAIN) errs.push('DOMAIN');
     if (!SQLITE_FILE) errs.push('SQLITE_FILE');
     if (!PORT_RANGE) errs.push('PORT_RANGE');
