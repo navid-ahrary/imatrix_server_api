@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-catch */
 import {intercept, service} from '@loopback/core';
-import {get, getModelSchemaRef, HttpErrors, param, patch, post, requestBody} from '@loopback/rest';
+import {get, getModelSchemaRef, HttpErrors, param, patch, post} from '@loopback/rest';
 import {AuthenticatorInterceptor} from '../interceptors';
 import {Inbounds} from '../models';
 import {V2RayService} from '../services';
@@ -90,27 +90,10 @@ export class ConfigsController {
   })
   async chargeConfigs(
     @param.query.string('configName', {required: true}) configName: string,
-    @requestBody({
-      description: 'How much traffic?',
-      required: true,
-      content: {
-        'application/json': {
-          schema: {
-            type: 'object',
-            properties: {
-              trafficInGb: {
-                type: 'number',
-              },
-            },
-          },
-          example: {trafficInGb: 30},
-        },
-      },
-    })
-    reqBody: {trafficInGb: number},
+    @param.query.number('trafficInGb', {required: true}) trafficInGb: number,
   ) {
     try {
-      const result = await this.v2RayService.charge(configName, reqBody.trafficInGb);
+      const result = await this.v2RayService.charge(configName, trafficInGb);
 
       if (result.changes === 0) {
         throw new HttpErrors.NotFound(`404: "${configName}" not found!`);
