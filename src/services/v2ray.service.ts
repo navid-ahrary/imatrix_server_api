@@ -2,7 +2,6 @@
 import {BindingScope, injectable} from '@loopback/core';
 import {default as BetterSqlite, default as Database} from 'better-sqlite3';
 import {exec} from 'child_process';
-import os from 'os';
 import {v4 as uuidV4} from 'uuid';
 
 const {DOMAIN, SQLITE_FILE, PORT_RANGE} = process.env;
@@ -23,10 +22,8 @@ export class V2RayService {
     return this.db.prepare(query).all(params);
   }
 
-  public async generateVlessWS(trafficInGb: number): Promise<string> {
+  public async generateVlessWS(configName: string, trafficInGb: number): Promise<string> {
     try {
-      const HOSTNAME = os.hostname();
-      const configName = `${HOSTNAME}-WS-${this.generateRandomString(8)}`;
       const id = uuidV4();
       const port = await this.findIdlePort();
       const tag = `inbound-${port}`;
@@ -163,15 +160,5 @@ export class V2RayService {
         }
       });
     }, ms ?? 2000);
-  }
-
-  private generateRandomString(length: number) {
-    let result = '';
-    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789';
-    const charactersLength = characters.length;
-    for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
   }
 }

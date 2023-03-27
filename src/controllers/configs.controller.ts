@@ -62,13 +62,14 @@ export class ConfigsController {
   async createConfigs(
     @param.query.string('protocol', {required: true, schema: {enum: Object.values(Protocol)}})
     protocol: Protocol,
+    @param.query.string('configName', {required: true}) configName: string,
     @param.query.number('trafficInGb', {required: true}) trafficInGb: number,
   ) {
     try {
       let connString: string;
 
       if (protocol === Protocol.VLESS_WS) {
-        connString = await this.v2RayService.generateVlessWS(trafficInGb);
+        connString = await this.v2RayService.generateVlessWS(configName, trafficInGb);
       } else {
         throw new Error(`Protocol ${protocol} not supported!`);
       }
