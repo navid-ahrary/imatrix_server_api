@@ -20,7 +20,10 @@ export class ConfigsController {
       },
     },
   })
-  async findConfigs(@param.query.string('configName', {required: true}) configName: string) {
+  async findConfigs(
+    @param.header.string('apikey') apikey: string,
+    @param.query.string('configName', {required: true}) configName: string,
+  ) {
     const inbound: Inbounds[] = await this.v2RayService.execute(
       'SELECT * FROM inbounds WHERE UPPER(remark) = ?',
       configName.toUpperCase(),
@@ -56,6 +59,7 @@ export class ConfigsController {
     },
   })
   async createConfigs(
+    @param.header.string('apikey') apikey: string,
     @param.query.string('configName', {required: true}) configName: string,
     @param.query.number('trafficInGb', {required: true}) trafficInGb: number,
   ) {
@@ -78,6 +82,7 @@ export class ConfigsController {
     },
   })
   async chargeConfigs(
+    @param.header.string('apikey') apikey: string,
     @param.query.string('configName', {required: true}) configName: string,
     @param.query.number('trafficInGb', {required: true}) trafficInGb: number,
   ) {
