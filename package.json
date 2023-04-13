@@ -51,7 +51,7 @@
     "@loopback/rest": "^12.0.9",
     "@loopback/rest-explorer": "^5.0.9",
     "@loopback/service-proxy": "^5.0.9",
-    "better-sqlite3": "^8.2.0",
+    "better-sqlite3": "^8.3.0",
     "dotenv": "^16.0.3",
     "tslib": "^2.0.0",
     "uuid": "^9.0.0"
@@ -60,7 +60,7 @@
     "@loopback/build": "^9.0.9",
     "@loopback/eslint-config": "^13.0.9",
     "@loopback/testlab": "^5.0.9",
-    "@types/better-sqlite3": "^7.6.3",
+    "@types/better-sqlite3": "^7.6.4",
     "@types/node": "^14.18.36",
     "@types/uuid": "^9.0.1",
     "eslint": "^8.35.0",

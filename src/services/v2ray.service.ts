@@ -3,9 +3,15 @@ import {BindingScope, injectable} from '@loopback/core';
 import {default as BetterSqlite, default as Database} from 'better-sqlite3';
 import {exec} from 'child_process';
 import {v4 as uuidV4} from 'uuid';
-import {Inbounds} from '../models';
+import {Clients, Inbounds} from '../models';
 
 const {DOMAIN, SQLITE_FILE} = process.env;
+
+interface Settings {
+  clients: Clients[];
+  decryption: string;
+  fallbacks: [];
+}
 
 @injectable({scope: BindingScope.SINGLETON})
 export class V2RayService {
@@ -16,24 +22,38 @@ export class V2RayService {
     this.db.pragma('journal_mode = WAL');
   }
 
-  public async execute(query: string, ...params: any[]): Promise<any[]> {
-    return this.db.prepare(query).all(params);
-  }
-
   public async generate(
     inboundId: number,
     clientName: string,
     trafficInGb: number,
   ): Promise<string> {
     try {
-      const id = uuidV4();
-      const trafficInBytes = trafficInGb * Math.pow(2, 30);
+      const clientId = uuidV4();
 
       console.log(`Generating ${clientName} ...`);
 
       const inbound = await this.findInbound(inboundId);
 
-      console.log(JSON.parse(inbound.settings));
+      const settings = <Settings>JSON.parse(inbound.settings);
+
+      settings.clients.push(
+        new Clients({
+          id: clientId,
+          email: clientName,
+          totalGB: trafficInGb,
+          enable: true,
+          expiryTime: 0,
+          flow: '',
+          limitIp: 0,
+          subId: '',
+          tgId: '',
+        }),
+      );
+
+      inbound.settings = JSON.stringify(settings, null, 2);
+
+      console.log(settings);
+      console.log(inbound);
 
       // this.db
       //   .prepare(
@@ -45,7 +65,7 @@ export class V2RayService {
 
       await this.restartXUI();
 
-      return `vless://${inbound.id}@dorna.imatrix.store:443?type=grpc&serviceName=&security=tls&fp=chrome&alpn=h2%2Chttp%2F1.1&sni=${DOMAIN}#Dorna-gRPC-${clientName}`;
+      return `vless://${clientId}@dorna.imatrix.store:443?type=grpc&serviceName=&security=tls&fp=chrome&alpn=h2%2Chttp%2F1.1&sni=${DOMAIN}#Dorna-gRPC-${clientName}`;
     } catch (err) {
       console.error(err.message);
       throw new Error(err.message);
@@ -76,7 +96,7 @@ export class V2RayService {
   }
 
   public async findInbound(inboundId: number): Promise<Inbounds> {
-    const res: Inbounds[] = this.db.prepare(`SELECT * FROM inbounds WHERE id = ?`).all(inboundId);
+    const res = <Inbounds[]>this.db.prepare(`SELECT * FROM inbounds WHERE id = ?`).all(inboundId);
     if (res.length) {
       return res[0];
     }
