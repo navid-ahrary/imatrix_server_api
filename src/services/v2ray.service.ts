@@ -5,14 +5,11 @@ import {exec} from 'child_process';
 import {v4 as uuidV4} from 'uuid';
 import {Inbounds} from '../models';
 
-const {DOMAIN, SQLITE_FILE, PORT_RANGE} = process.env;
+const {DOMAIN, SQLITE_FILE} = process.env;
 
 @injectable({scope: BindingScope.SINGLETON})
 export class V2RayService {
   private db: BetterSqlite.Database;
-
-  private START_PORT = +PORT_RANGE!.split(':')[0];
-  private END_PORT = +PORT_RANGE!.split(':')[1];
 
   constructor() {
     this.db = new BetterSqlite(SQLITE_FILE!, {fileMustExist: true});
