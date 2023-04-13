@@ -22,17 +22,14 @@ export class V2RayService {
     this.db.pragma('journal_mode = WAL');
   }
 
-  public async generate(
-    configName: string,
-    clientName: string,
-    trafficInGb: number,
-  ): Promise<string> {
+  public async generate(clientName: string, trafficInGb: number): Promise<string> {
     try {
       const clientId = uuidV4();
 
       console.log(`Generating ${clientName} ...`);
 
-      const inbound = await this.findInbound(configName);
+      const inboundName = 'Dorna-gRPC';
+      const inbound = await this.findInbound(inboundName);
 
       const settings = <Settings>JSON.parse(inbound.settings);
 
@@ -97,7 +94,7 @@ export class V2RayService {
 
   public async findInbound(name: string): Promise<Inbounds> {
     const res = <Inbounds[]>(
-      this.db.prepare(`SELECT * FROM inbounds WHERE UPPER(name) = ?`).all(name.toUpperCase())
+      this.db.prepare(`SELECT * FROM inbounds WHERE UPPER(remark)=?`).all(name.toUpperCase())
     );
     if (res.length) {
       return res[0];
