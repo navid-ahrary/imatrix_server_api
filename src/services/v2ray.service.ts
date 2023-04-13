@@ -22,18 +22,19 @@ export class V2RayService {
 
   public async generate(
     inboundId: number,
-    configName: string,
+    clientName: string,
     trafficInGb: number,
   ): Promise<string> {
     try {
       const id = uuidV4();
       const trafficInBytes = trafficInGb * Math.pow(2, 30);
 
-      console.log(`Generating ${configName} ...`);
+      console.log(`Generating ${clientName} ...`);
 
       const inbound = await this.findInbound(inboundId);
 
-      console.log(inbound);
+      console.log(JSON.parse(inbound.settings));
+
       // this.db
       //   .prepare(
       //     `INSERT INTO client_traffics
@@ -44,7 +45,7 @@ export class V2RayService {
 
       await this.restartXUI();
 
-      return `vless://${inbound.id}@dorna.imatrix.store:443?type=grpc&serviceName=&security=tls&fp=chrome&alpn=h2%2Chttp%2F1.1&sni=${DOMAIN}#Dorna-gRPC-${configName}`;
+      return `vless://${inbound.id}@dorna.imatrix.store:443?type=grpc&serviceName=&security=tls&fp=chrome&alpn=h2%2Chttp%2F1.1&sni=${DOMAIN}#Dorna-gRPC-${clientName}`;
     } catch (err) {
       console.error(err.message);
       throw new Error(err.message);

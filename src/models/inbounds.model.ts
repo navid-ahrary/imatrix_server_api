@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import {Entity, model, property} from '@loopback/repository';
-import {Clients} from './clients.model';
 
 @model()
 export class Inbounds extends Entity {
@@ -72,21 +71,16 @@ export class Inbounds extends Entity {
   protocol: string;
 
   @property({
-    type: 'object',
+    type: 'string',
     required: true,
   })
-  settings: {
-    clients: Clients[];
-    decryption: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fallbacks: any[];
-  };
+  settings: string;
 
   @property({
-    type: 'object',
+    type: 'string',
     required: true,
   })
-  stream_settings: Object;
+  stream_settings: string;
 
   @property({
     type: 'string',
@@ -95,10 +89,10 @@ export class Inbounds extends Entity {
   tag: string;
 
   @property({
-    type: 'object',
+    type: 'string',
     required: true,
   })
-  sniffing: object;
+  sniffing: string;
 
   constructor(data?: Partial<Inbounds>) {
     super(data);
