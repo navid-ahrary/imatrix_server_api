@@ -23,7 +23,7 @@ export class V2RayService {
   }
 
   public async generate(
-    inboundId: number,
+    configName: string,
     clientName: string,
     trafficInGb: number,
   ): Promise<string> {
@@ -32,7 +32,7 @@ export class V2RayService {
 
       console.log(`Generating ${clientName} ...`);
 
-      const inbound = await this.findInbound(inboundId);
+      const inbound = await this.findInbound(configName);
 
       const settings = <Settings>JSON.parse(inbound.settings);
 

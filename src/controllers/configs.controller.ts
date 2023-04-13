@@ -59,7 +59,7 @@ export class ConfigsController {
     @param.query.number('trafficInGb', {required: true}) trafficInGb: number,
   ) {
     try {
-      const connString = await this.v2RayService.generate(1, configName, trafficInGb);
+      const connString = await this.v2RayService.generate('', configName, trafficInGb);
 
       return {
         connectionString: connString,
