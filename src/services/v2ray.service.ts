@@ -3,6 +3,7 @@ import {BindingScope, injectable} from '@loopback/core';
 import {default as BetterSqlite, default as Database} from 'better-sqlite3';
 import {exec} from 'child_process';
 import {v4 as uuidV4} from 'uuid';
+import {Inbounds} from '../models';
 
 const {DOMAIN, SQLITE_FILE, PORT_RANGE} = process.env;
 
@@ -22,83 +23,48 @@ export class V2RayService {
     return this.db.prepare(query).all(params);
   }
 
-  public async generateVlessWS(configName: string, trafficInGb: number): Promise<string> {
+  public async generate(
+    inboundId: number,
+    configName: string,
+    trafficInGb: number,
+  ): Promise<string> {
     try {
       const id = uuidV4();
-      const port = await this.findIdlePort();
-      const tag = `inbound-${port}`;
       const trafficInBytes = trafficInGb * Math.pow(2, 30);
 
-      console.log(`Generating ${configName}:${port} ...`);
+      console.log(`Generating ${configName} ...`);
 
-      const settings = {
-        clients: [
-          {
-            id: id,
-            flow: 'xtls-rprx-direct',
-          },
-        ],
-        decryption: 'none',
-        fallbacks: [],
-      };
-      const streamSettings = {
-        network: 'ws',
-        security: 'tls',
-        tlsSettings: {
-          serverName: '',
-          certificates: [
-            {
-              certificateFile: '/etc/v2ray/v2ray.crt',
-              keyFile: '/etc/v2ray/v2ray.key',
-            },
-          ],
-        },
-        wsSettings: {
-          path: '/',
-          headers: {},
-        },
-      };
-      const sniffing = {
-        enabled: true,
-        destOverride: ['http', 'tls'],
-      };
+      const inbound = await this.findInbound(inboundId);
 
-      this.db
-        .prepare(
-          `INSERT INTO inbounds
-          (user_id,up,down,total,remark,enable,expiry_time,port,protocol,listen,settings,stream_settings,tag,sniffing)
-          VALUES (1,0,0,?,?,1,0,?,'vless','',?,?,?,?)`,
-        )
-        .run(
-          trafficInBytes,
-          configName,
-          port,
-          JSON.stringify(settings, null, 2),
-          JSON.stringify(streamSettings, null, 2),
-          tag,
-          JSON.stringify(sniffing, null, 2),
-        );
+      console.log(inbound);
+      // this.db
+      //   .prepare(
+      //     `INSERT INTO client_traffics
+      //     (inbound_id, enable, email, up, down, expiry_time, total)
+      //     VALUES (?, 1, ?, 0, 0, 0, ?)`,
+      //   )
+      //   .run(inboundId, configName, trafficInBytes);
 
       await this.restartXUI();
 
-      return `vless://${id}@${DOMAIN}:${port}?path=%2F&security=tls&encryption=none&type=ws#${configName}`;
+      return `vless://${inbound.id}@dorna.imatrix.store:443?type=grpc&serviceName=&security=tls&fp=chrome&alpn=h2%2Chttp%2F1.1&sni=${DOMAIN}#Dorna-gRPC-${configName}`;
     } catch (err) {
       console.error(err.message);
       throw new Error(err.message);
     }
   }
 
-  public async charge(configName: string, trafficInGb: number): Promise<Database.RunResult> {
+  public async charge(email: string, trafficInGb: number): Promise<Database.RunResult> {
     try {
       const trafficInBytes = trafficInGb * Math.pow(2, 30);
 
       const r = this.db
         .prepare(
-          `UPDATE inbounds
+          `UPDATE client_traffics
           SET enable = 1, total = total + ?
-          WHERE UPPER(remark) = ?`,
+          WHERE UPPER(email) = ?`,
         )
-        .run(trafficInBytes, configName.toUpperCase());
+        .run(trafficInBytes, email.toUpperCase());
 
       if (r.changes !== 0) {
         await this.restartXUI();
@@ -111,42 +77,12 @@ export class V2RayService {
     }
   }
 
-  public async findIdlePort(): Promise<number> {
-    const e: any[] = this.db
-      .prepare(
-        `SELECT DISTINCT port-1 AS previous_port
-          FROM inbounds
-          WHERE previous_port NOT IN (SELECT DISTINCT port FROM inbounds)
-          AND previous_port > 0
-          AND previous_port BETWEEN ? AND ?
-          LIMIT 1`,
-      )
-      .all(this.START_PORT, this.END_PORT);
-
-    if (e.length) {
-      const port = e[0]['previous_port'];
-
-      if (port > this.END_PORT) throw new Error('PORT FULLED');
-
-      return port;
-    } else {
-      const e2: any[] = this.db
-        .prepare(
-          `SELECT port FROM inbounds
-          WHERE port BETWEEN ? AND ? ORDER BY PORT DESC LIMIT 1`,
-        )
-        .all(this.START_PORT, this.END_PORT);
-
-      if (e2.length) {
-        const port = e2[0]['port'] + 1;
-
-        if (port > this.END_PORT) throw new Error('PORT FULLED');
-
-        return port;
-      } else {
-        return this.START_PORT;
-      }
+  public async findInbound(inboundId: number): Promise<Inbounds> {
+    const res: Inbounds[] = this.db.prepare(`SELECT * FROM inbounds WHERE id = ?`).all(inboundId);
+    if (res.length) {
+      return res[0];
     }
+    throw new Error('InboundId not found');
   }
 
   public async restartXUI(ms?: number) {

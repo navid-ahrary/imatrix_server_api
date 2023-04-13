@@ -5,10 +5,6 @@ import {AuthenticatorInterceptor} from '../interceptors';
 import {Inbounds} from '../models';
 import {V2RayService} from '../services';
 
-enum Protocol {
-  'VLESS_WS' = 'vless-ws',
-}
-
 @intercept(AuthenticatorInterceptor.BINDING_KEY)
 export class ConfigsController {
   constructor(@service(V2RayService) private v2RayService: V2RayService) {}
@@ -60,19 +56,11 @@ export class ConfigsController {
     },
   })
   async createConfigs(
-    @param.query.string('protocol', {required: true, schema: {enum: Object.values(Protocol)}})
-    protocol: Protocol,
     @param.query.string('configName', {required: true}) configName: string,
     @param.query.number('trafficInGb', {required: true}) trafficInGb: number,
   ) {
     try {
-      let connString: string;
-
-      if (protocol === Protocol.VLESS_WS) {
-        connString = await this.v2RayService.generateVlessWS(configName, trafficInGb);
-      } else {
-        throw new Error(`Protocol ${protocol} not supported!`);
-      }
+      const connString = await this.v2RayService.generate(1, configName, trafficInGb);
 
       return {
         connectionString: connString,
