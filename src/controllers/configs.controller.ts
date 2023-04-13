@@ -24,18 +24,13 @@ export class ConfigsController {
     @param.header.string('apikey') apikey: string,
     @param.query.string('configName', {required: true}) configName: string,
   ) {
-    const inbound: Inbounds[] = await this.v2RayService.execute(
-      'SELECT * FROM inbounds WHERE UPPER(remark) = ?',
-      configName.toUpperCase(),
-    );
-
-    if (!inbound.length) {
-      throw new HttpErrors.NotFound(`${configName} not found!`);
-    } else if (inbound.length > 1) {
-      throw new HttpErrors.UnprocessableEntity(`${configName} has multi result!`);
+    try {
+      const inbound = await this.v2RayService.findInbound(configName);
+      return inbound;
+    } catch (err) {
+      console.error(err.message);
+      throw new HttpErrors.UnprocessableEntity(err.message);
     }
-
-    return new Inbounds(inbound[0]);
   }
 
   @post('/configs', {

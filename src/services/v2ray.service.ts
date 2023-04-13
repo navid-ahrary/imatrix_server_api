@@ -95,8 +95,10 @@ export class V2RayService {
     }
   }
 
-  public async findInbound(inboundId: number): Promise<Inbounds> {
-    const res = <Inbounds[]>this.db.prepare(`SELECT * FROM inbounds WHERE id = ?`).all(inboundId);
+  public async findInbound(name: string): Promise<Inbounds> {
+    const res = <Inbounds[]>(
+      this.db.prepare(`SELECT * FROM inbounds WHERE UPPER(name) = ?`).all(name.toUpperCase())
+    );
     if (res.length) {
       return res[0];
     }
