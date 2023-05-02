@@ -3,9 +3,9 @@ import {BindingScope, injectable} from '@loopback/core';
 import {default as BetterSqlite, default as Database} from 'better-sqlite3';
 import {exec} from 'child_process';
 import {v4 as uuidV4} from 'uuid';
-import {Clients, Inbounds} from '../models';
+import {ClientTraffics, Clients, Inbounds} from '../models';
 
-const {DOMAIN, SQLITE_FILE} = process.env;
+const {TUNNEL_DOMAIN, TUNNEL_PORT, SQLITE_FILE} = process.env;
 
 interface Settings {
   clients: Clients[];
@@ -28,8 +28,8 @@ export class V2RayService {
 
       console.log(`Generating ${clientName} ...`);
 
-      const inboundName = 'Dorna-gRPC';
-      const inbound = await this.findInbound(inboundName);
+      const inboundName = 'Sahel-RE';
+      const inbound = await this.findInbounds(inboundName);
 
       const settings = <Settings>JSON.parse(inbound.settings);
 
@@ -62,7 +62,7 @@ export class V2RayService {
 
       await this.restartXUI();
 
-      return `vless://${clientId}@dorna.imatrix.store:443?type=grpc&serviceName=&security=tls&fp=chrome&alpn=h2%2Chttp%2F1.1&sni=${DOMAIN}#Dorna-gRPC-${clientName}`;
+      return `vless://${clientId}@${TUNNEL_DOMAIN}:${TUNNEL_PORT}?type=grpc&serviceName=&security=reality&fp=firefox&pbk=6EwNceeX1hkid4hHwIzt0dX4JirL93oFaN9ioVo_nTk&sni=yahoo.com&sid=7f46a381#Sahel-RE-Younes`;
     } catch (err) {
       console.error(err.message);
       throw new Error(err.message);
@@ -92,14 +92,25 @@ export class V2RayService {
     }
   }
 
-  public async findInbound(name: string): Promise<Inbounds> {
+  public async findClient(name: string): Promise<ClientTraffics> {
+    const email = name.split('-')[2];
+    const res = <ClientTraffics[]>(
+      this.db.prepare(`SELECT * FROM client_traffics WHERE UPPER(email)=?`).all(email.toUpperCase())
+    );
+    if (res.length) {
+      return res[0];
+    }
+    throw new Error('Client not found');
+  }
+
+  public async findInbounds(name: string): Promise<Inbounds> {
     const res = <Inbounds[]>(
       this.db.prepare(`SELECT * FROM inbounds WHERE UPPER(remark)=?`).all(name.toUpperCase())
     );
     if (res.length) {
       return res[0];
     }
-    throw new Error('InboundId not found');
+    throw new Error('Inbound not found');
   }
 
   public async restartXUI(ms?: number) {

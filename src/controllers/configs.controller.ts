@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-catch */
 import {intercept, service} from '@loopback/core';
-import {get, getModelSchemaRef, HttpErrors, param, patch, post} from '@loopback/rest';
+import {HttpErrors, get, getModelSchemaRef, param, patch, post} from '@loopback/rest';
 import {AuthenticatorInterceptor} from '../interceptors';
 import {Inbounds} from '../models';
 import {V2RayService} from '../services';
@@ -25,7 +25,7 @@ export class ConfigsController {
     @param.query.string('configName', {required: true}) configName: string,
   ) {
     try {
-      const inbound = await this.v2RayService.findInbound(configName);
+      const inbound = await this.v2RayService.findClient(configName);
       return inbound;
     } catch (err) {
       console.error(err.message);
@@ -45,8 +45,7 @@ export class ConfigsController {
               },
             },
             example: {
-              connectionString:
-                'vless://1ec5fd9e-1f87-4502-af96-a87d7fbf0ddc@imatrix.store:2086?path=%2F&security=tls&encryption=none&type=ws#Probook-WS-XVZHE4US',
+              connectionString: 'vless://...',
             },
           },
         },

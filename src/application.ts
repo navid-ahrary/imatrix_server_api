@@ -45,12 +45,13 @@ export class ImatrixServerApiApplication extends BootMixin(
   }
 
   verifyEnvVars() {
-    const {API_KEY, DOMAIN, SQLITE_FILE} = process.env;
+    const {API_KEY, TUNNEL_DOMAIN, TUNNEL_PORT, SQLITE_FILE} = process.env;
 
     const errs = [];
 
     if (!API_KEY) errs.push('API_KEY');
-    if (!DOMAIN) errs.push('DOMAIN');
+    if (!TUNNEL_DOMAIN) errs.push('TUNNEL_DOMAIN');
+    if (!TUNNEL_PORT) errs.push('TUNNEL_PORT');
     if (!SQLITE_FILE) errs.push('SQLITE_FILE');
 
     if (errs.length) throw new Error(`${errs.join(', ')} must be provided!`);
