@@ -100,7 +100,7 @@ export class V2RayService {
     if (res.length) {
       return res[0];
     }
-    throw new Error('Client not found');
+    throw new Error('Find Client: not found');
   }
 
   public async findInbounds(name: string): Promise<Inbounds> {
@@ -110,7 +110,17 @@ export class V2RayService {
     if (res.length) {
       return res[0];
     }
-    throw new Error('Inbound not found');
+    throw new Error('Find Inbound: not found');
+  }
+
+  public async deleteInbound(name: string): Promise<void> {
+    const res = this.db
+      .prepare(`DELETE FROM inbounds WHERE UPPER(remark)=?`)
+      .run(name.toUpperCase());
+
+    if (res.changes === 0) {
+      throw new Error('Delete Inbound: not found');
+    }
   }
 
   public async restartXUI(ms?: number) {

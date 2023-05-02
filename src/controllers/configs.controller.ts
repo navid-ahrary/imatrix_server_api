@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-catch */
 import {intercept, service} from '@loopback/core';
-import {HttpErrors, get, getModelSchemaRef, param, patch, post} from '@loopback/rest';
+import {HttpErrors, del, get, getModelSchemaRef, param, patch, post} from '@loopback/rest';
 import {AuthenticatorInterceptor} from '../interceptors';
 import {Inbounds} from '../models';
 import {V2RayService} from '../services';
@@ -21,15 +21,25 @@ export class ConfigsController {
     },
   })
   async findConfigs(
-    @param.header.string('apikey') apikey: string,
+    @param.header.string('apikey', {example: 'apikey', required: true}) apikey: string,
     @param.query.string('configName', {required: true}) configName: string,
   ) {
     try {
-      const inbound = await this.v2RayService.findClient(configName);
-      return inbound;
+      const client = await this.v2RayService.findClient(configName);
+      return client;
     } catch (err) {
       console.error(err.message);
-      throw new HttpErrors.UnprocessableEntity(err.message);
+
+      try {
+        //  Check for old x-ui panels
+        if (err.message === 'Client not found') {
+          const inbound = await this.v2RayService.findInbounds(configName);
+          return inbound;
+        }
+      } catch (err2) {
+        console.error(err2.message);
+        throw new HttpErrors.UnprocessableEntity(err2.message);
+      }
     }
   }
 
@@ -53,7 +63,7 @@ export class ConfigsController {
     },
   })
   async createConfigs(
-    @param.header.string('apikey') apikey: string,
+    @param.header.string('apikey', {example: 'apikey', required: true}) apikey: string,
     @param.query.string('configName', {required: true}) configName: string,
     @param.query.number('trafficInGb', {required: true}) trafficInGb: number,
   ) {
@@ -69,14 +79,14 @@ export class ConfigsController {
     }
   }
 
-  @patch('/configs/', {
+  @patch('/configs', {
     responses: {
       204: {description: 'Done, no content'},
       404: {decscription: 'Config not found'},
     },
   })
   async chargeConfigs(
-    @param.header.string('apikey') apikey: string,
+    @param.header.string('apikey', {example: 'apikey', required: true}) apikey: string,
     @param.query.string('configName', {required: true}) configName: string,
     @param.query.number('trafficInGb', {required: true}) trafficInGb: number,
   ) {
@@ -86,6 +96,24 @@ export class ConfigsController {
       if (result.changes === 0) {
         throw new HttpErrors.NotFound(`404: "${configName}" not found!`);
       }
+    } catch (err) {
+      console.error(err.message);
+      throw err;
+    }
+  }
+
+  @del('/configs', {
+    responses: {
+      204: {description: 'Done, no content'},
+      404: {description: 'Config not found'},
+    },
+  })
+  async deleteConfig(
+    @param.header.string('apikey', {example: 'apikey', required: true}) apikey: string,
+    @param.query.string('configName', {required: true}) configName: string,
+  ) {
+    try {
+      await this.v2RayService.deleteInbound(configName);
     } catch (err) {
       console.error(err.message);
       throw err;
