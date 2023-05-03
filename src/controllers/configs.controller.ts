@@ -32,7 +32,7 @@ export class ConfigsController {
 
       try {
         //  Check for old x-ui panels
-        if (err.message === 'Client not found') {
+        if (err.message.includes('not found')) {
           const inbound = await this.v2RayService.findInbounds(configName);
           return inbound;
         }
