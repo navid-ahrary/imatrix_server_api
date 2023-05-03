@@ -21,7 +21,7 @@ export class ConfigsController {
     },
   })
   async findConfigs(
-    @param.header.string('apikey', {example: 'apikey', required: true}) apikey: string,
+    @param.header.string('apikey', {example: 'apikey'}) apikey: string,
     @param.query.string('configName', {required: true}) configName: string,
   ) {
     try {

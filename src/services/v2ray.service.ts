@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-catch */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {BindingScope, injectable} from '@loopback/core';
 import {default as BetterSqlite, default as Database} from 'better-sqlite3';
@@ -93,14 +94,19 @@ export class V2RayService {
   }
 
   public async findClient(name: string): Promise<ClientTraffics> {
-    const email = name.split('-')[2];
-    const res = <ClientTraffics[]>(
-      this.db.prepare(`SELECT * FROM client_traffics WHERE UPPER(email)=?`).all(email.toUpperCase())
-    );
-    if (res.length) {
-      return res[0];
+    try {
+      const email = name.split('-')[2];
+      const res = <ClientTraffics[]>(
+        this.db
+          .prepare(`SELECT * FROM client_traffics WHERE UPPER(email)=?`)
+          .all(email.toUpperCase())
+      );
+      if (res.length) {
+        return res[0];
+      }
+    } catch (err) {
+      throw new Error('Find Client: not found');
     }
-    throw new Error('Find Client: not found');
   }
 
   public async findInbounds(name: string): Promise<Inbounds> {
