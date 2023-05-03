@@ -25,10 +25,10 @@ export class V2RayService {
 
   public async generate(clientName: string, trafficInGb: number): Promise<string> {
     try {
-      const clientId = uuidV4();
-
       console.log(`Generating ${clientName} ...`);
 
+      const clientId = uuidV4();
+      const pbk = '6EwNceeX1hkid4hHwIzt0dX4JirL93oFaN9ioVo_nTk';
       const inboundName = 'Sahel-RE';
       const inbound = await this.findInbounds(inboundName);
 
@@ -38,7 +38,7 @@ export class V2RayService {
         new Clients({
           id: clientId,
           email: clientName,
-          totalGB: trafficInGb,
+          totalGB: trafficInGb * Math.pow(2, 30),
           enable: true,
           expiryTime: 0,
           flow: '',
@@ -48,22 +48,25 @@ export class V2RayService {
         }),
       );
 
-      inbound.settings = JSON.stringify(settings, null, 2);
+      this.db
+        .prepare(
+          `UPDATE inbounds
+          SET settings = ?
+          WHERE id = ?`,
+        )
+        .run(JSON.stringify(settings, null, 2), inbound.id);
 
-      console.log(settings);
-      console.log(inbound);
-
-      // this.db
-      //   .prepare(
-      //     `INSERT INTO client_traffics
-      //     (inbound_id, enable, email, up, down, expiry_time, total)
-      //     VALUES (?, 1, ?, 0, 0, 0, ?)`,
-      //   )
-      //   .run(inboundId, configName, trafficInBytes);
+      this.db
+        .prepare(
+          `INSERT INTO client_traffics
+          (inbound_id, enable, email, up, down, expiry_time, total)
+          VALUES (?, 1, ?, 0, 0, 0, ?)`,
+        )
+        .run(inbound.id, clientName, trafficInGb * Math.pow(2, 30));
 
       await this.restartXUI();
 
-      return `vless://${clientId}@${TUNNEL_DOMAIN}:${TUNNEL_PORT}?type=grpc&serviceName=&security=reality&fp=firefox&pbk=6EwNceeX1hkid4hHwIzt0dX4JirL93oFaN9ioVo_nTk&sni=yahoo.com&sid=7f46a381#Sahel-RE-Younes`;
+      return `vless://${clientId}@${TUNNEL_DOMAIN}:${TUNNEL_PORT}?type=grpc&serviceName=&security=reality&fp=firefox&pbk=${pbk}&sni=yahoo.com&sid=7f46a381#${inboundName}-${clientName}`;
     } catch (err) {
       console.error(err.message);
       throw new Error(err.message);
@@ -128,6 +131,8 @@ export class V2RayService {
     if (res.changes === 0) {
       throw new Error('Delete Inbound: not found');
     }
+
+    await this.restartXUI();
   }
 
   public async restartXUI(ms?: number) {
