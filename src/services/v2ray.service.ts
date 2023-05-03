@@ -3,6 +3,7 @@
 import {BindingScope, injectable} from '@loopback/core';
 import {default as BetterSqlite, default as Database} from 'better-sqlite3';
 import {exec} from 'child_process';
+import _ from 'lodash';
 import {v4 as uuidV4} from 'uuid';
 import {ClientTraffics, Clients, Inbounds} from '../models';
 
@@ -34,20 +35,6 @@ export class V2RayService {
 
       const settings = <Settings>JSON.parse(inbound.settings);
 
-      settings.clients.push(
-        new Clients({
-          id: clientId,
-          email: clientName,
-          totalGB: trafficInGb * Math.pow(2, 30),
-          enable: true,
-          expiryTime: 0,
-          flow: '',
-          limitIp: 0,
-          subId: '',
-          tgId: '',
-        }),
-      );
-
       this.db
         .prepare(
           `UPDATE inbounds
@@ -73,9 +60,31 @@ export class V2RayService {
     }
   }
 
-  public async charge(email: string, trafficInGb: number): Promise<Database.RunResult> {
+  public async charge(configName: string, trafficInGb: number): Promise<Database.RunResult> {
     try {
+      const inboundName = configName.split('-')[0] + '-' + configName.split('-')[1];
+      const email = configName.split('-')[2];
       const trafficInBytes = trafficInGb * Math.pow(2, 30);
+
+      const inbound = await this.findInbounds(inboundName);
+
+      const settings = <Settings>JSON.parse(inbound.settings);
+      const foundIdx = _.findIndex(settings.clients, {email: email});
+
+      if (foundIdx === -1) {
+        throw new Error('Charge Inbound: Not found');
+      }
+
+      settings.clients[foundIdx].totalGB =
+        settings.clients[foundIdx].totalGB + trafficInGb * Math.pow(2, 30);
+
+      this.db
+        .prepare(
+          `UPDATE inbounds
+          SET settings = ?
+          WHERE id = ?`,
+        )
+        .run(JSON.stringify(settings, null, 2), inbound.id);
 
       const r = this.db
         .prepare(
