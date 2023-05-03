@@ -104,6 +104,7 @@ export class V2RayService {
       if (res.length) {
         return res[0];
       }
+      throw new Error('Find Client: not found');
     } catch (err) {
       throw new Error('Find Client: not found');
     }
