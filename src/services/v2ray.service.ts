@@ -108,6 +108,7 @@ export class V2RayService {
   public async findClient(name: string): Promise<ClientTraffics> {
     try {
       const email = name.split('-')[2];
+      console.log(name, email);
       const res = <ClientTraffics[]>(
         this.db
           .prepare(`SELECT * FROM client_traffics WHERE UPPER(email)=?`)
@@ -123,6 +124,7 @@ export class V2RayService {
   }
 
   public async findInbounds(name: string): Promise<Inbounds> {
+    console.log(name);
     const res = <Inbounds[]>(
       this.db.prepare(`SELECT * FROM inbounds WHERE UPPER(remark)=?`).all(name.toUpperCase())
     );
