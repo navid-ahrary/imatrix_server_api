@@ -5,7 +5,7 @@ import {default as BetterSqlite, default as Database} from 'better-sqlite3';
 import {exec} from 'child_process';
 import _ from 'lodash';
 import {v4 as uuidV4} from 'uuid';
-import {ClientTraffics, Clients, Inbounds} from '../models';
+import {Clients, ClientTraffics, Inbounds} from '../models';
 
 const {TUNNEL_DOMAIN, TUNNEL_PORT, SQLITE_FILE} = process.env;
 
@@ -29,7 +29,7 @@ export class V2RayService {
       console.log(`Generating ${clientName} ...`);
 
       const clientId = uuidV4();
-      const pbk = '6EwNceeX1hkid4hHwIzt0dX4JirL93oFaN9ioVo_nTk';
+      const pbk = process.env.INBOUND_PUBLIC_KEY!;
       const inboundName = 'Sahel-RE';
       const inbound = await this.findInbounds(inboundName);
 
