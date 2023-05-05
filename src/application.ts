@@ -45,7 +45,8 @@ export class ImatrixServerApiApplication extends BootMixin(
   }
 
   verifyEnvVars() {
-    const {API_KEY, TUNNEL_DOMAIN, TUNNEL_PORT, SQLITE_FILE, INBOUND_PUBLIC_KEY} = process.env;
+    const {API_KEY, TUNNEL_DOMAIN, TUNNEL_PORT, SQLITE_FILE, INBOUND_PUBLIC_KEY, SERVER_NAME} =
+      process.env;
 
     const errs = [];
 
@@ -54,6 +55,7 @@ export class ImatrixServerApiApplication extends BootMixin(
     if (!TUNNEL_PORT) errs.push('TUNNEL_PORT');
     if (!SQLITE_FILE) errs.push('SQLITE_FILE');
     if (!INBOUND_PUBLIC_KEY) errs.push('INBOUND_PUBLIC_KEY');
+    if (!SERVER_NAME) errs.push('SERVER_NAME');
 
     if (errs.length) throw new Error(`${errs.join(', ')} must be provided!`);
   }

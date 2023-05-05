@@ -7,7 +7,7 @@ import _ from 'lodash';
 import {v4 as uuidV4} from 'uuid';
 import {Clients, ClientTraffics, Inbounds} from '../models';
 
-const {TUNNEL_DOMAIN, TUNNEL_PORT, SQLITE_FILE} = process.env;
+const {TUNNEL_DOMAIN, TUNNEL_PORT, SQLITE_FILE, SERVER_NAME} = process.env;
 
 interface Settings {
   clients: Clients[];
@@ -30,7 +30,7 @@ export class V2RayService {
 
       const clientId = uuidV4();
       const pbk = process.env.INBOUND_PUBLIC_KEY!;
-      const inboundName = 'Sahel-RE';
+      const inboundName = `${SERVER_NAME}-RE`;
       const inbound = await this.findInbounds(inboundName);
 
       const settings = <Settings>JSON.parse(inbound.settings);
