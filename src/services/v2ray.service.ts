@@ -35,7 +35,7 @@ export class V2RayService {
 
       const settings = <Settings>JSON.parse(inbound.settings);
 
-      this.db
+      const r = this.db
         .prepare(
           `UPDATE inbounds
           SET settings = ?
@@ -43,13 +43,17 @@ export class V2RayService {
         )
         .run(JSON.stringify(settings, null, 2), inbound.id);
 
-      this.db
+      console.log('generating', r);
+
+      const r2 = this.db
         .prepare(
           `INSERT INTO client_traffics
           (inbound_id, enable, email, up, down, expiry_time, total)
           VALUES (?, 1, ?, 0, 0, 0, ?)`,
         )
         .run(inbound.id, clientName, trafficInGb * Math.pow(2, 30));
+
+      console.log('generating', r2);
 
       await this.restartXUI();
 
@@ -78,15 +82,16 @@ export class V2RayService {
       settings.clients[foundIdx].totalGB =
         settings.clients[foundIdx].totalGB + trafficInGb * Math.pow(2, 30);
 
-      this.db
+      const r = this.db
         .prepare(
           `UPDATE inbounds
           SET settings = ?
           WHERE id = ?`,
         )
         .run(JSON.stringify(settings, null, 2), inbound.id);
+      console.log('updating', r);
 
-      const r = this.db
+      const r2 = this.db
         .prepare(
           `UPDATE client_traffics
           SET enable = 1, total = total + ?
@@ -94,7 +99,9 @@ export class V2RayService {
         )
         .run(trafficInBytes, email.toUpperCase());
 
-      if (r.changes !== 0) {
+      console.log('updating, r2');
+
+      if (r2.changes !== 0) {
         await this.restartXUI();
       }
 
