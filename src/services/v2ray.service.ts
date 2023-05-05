@@ -69,7 +69,7 @@ export class V2RayService {
 
       console.log('generating', r2);
 
-      // await this.restartXUI();
+      await this.restartXUI();
 
       return `vless://${clientId}@${TUNNEL_DOMAIN}:${TUNNEL_PORT}?type=grpc&serviceName=&security=reality&fp=firefox&pbk=${pbk}&sni=yahoo.com&sid=7f46a381#${inboundName}-${clientName}`;
     } catch (err) {
