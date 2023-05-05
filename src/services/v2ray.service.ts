@@ -35,6 +35,20 @@ export class V2RayService {
 
       const settings = <Settings>JSON.parse(inbound.settings);
 
+      settings.clients.push(
+        new Clients({
+          id: clientId,
+          email: clientName,
+          totalGB: trafficInGb,
+          enable: true,
+          expiryTime: 0,
+          flow: '',
+          limitIp: 0,
+          subId: '',
+          tgId: '',
+        }),
+      );
+
       const r = this.db
         .prepare(
           `UPDATE inbounds
