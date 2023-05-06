@@ -5,7 +5,7 @@ import {default as BetterSqlite, default as Database} from 'better-sqlite3';
 import {exec} from 'child_process';
 import _ from 'lodash';
 import {v4 as uuidV4} from 'uuid';
-import {Clients, ClientTraffics, Inbounds} from '../models';
+import {ClientTraffics, Clients, Inbounds} from '../models';
 
 const {TUNNEL_DOMAIN, TUNNEL_PORT, SQLITE_FILE, SERVER_NAME} = process.env;
 
@@ -37,15 +37,15 @@ export class V2RayService {
 
       settings.clients.push(
         new Clients({
-          id: clientId,
           email: clientName,
-          totalGB: trafficInGb * Math.pow(2, 30),
           enable: true,
           expiryTime: 0,
           flow: '',
+          id: clientId,
           limitIp: 0,
           subId: '',
           tgId: '',
+          totalGB: trafficInGb * Math.pow(2, 30),
         }),
       );
 
@@ -96,14 +96,14 @@ export class V2RayService {
       settings.clients[foundIdx].totalGB =
         settings.clients[foundIdx].totalGB + trafficInGb * Math.pow(2, 30);
 
-      const r = this.db
-        .prepare(
-          `UPDATE inbounds
-          SET settings = ?
-          WHERE id = ?`,
-        )
-        .run(JSON.stringify(settings, null, 2), inbound.id);
-      console.log('updating', r);
+      // const r = this.db
+      //   .prepare(
+      //     `UPDATE inbounds
+      //     SET settings = ?
+      //     WHERE id = ?`,
+      //   )
+      //   .run(JSON.stringify(settings, null, 2), inbound.id);
+      // console.log('updating', r);
 
       const r2 = this.db
         .prepare(
