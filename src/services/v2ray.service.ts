@@ -17,15 +17,13 @@ interface Settings {
 
 @injectable({scope: BindingScope.SINGLETON})
 export class V2RayService {
-  private db: BetterSqlite.Database;
-
-  constructor() {
-    this.db = new BetterSqlite(SQLITE_FILE!, {fileMustExist: true});
-    this.db.pragma('journal_mode = WAL');
-  }
+  constructor() {}
 
   public async generate(clientName: string, trafficInGb: number): Promise<string> {
     try {
+      const db = new BetterSqlite(SQLITE_FILE!, {fileMustExist: true});
+      db.pragma('journal_mode = WAL');
+
       console.log(`Generating ${clientName} ...`);
 
       const clientId = uuidV4();
@@ -49,7 +47,7 @@ export class V2RayService {
         }),
       );
 
-      const r = this.db
+      const r = db
         .prepare(
           `UPDATE inbounds
           SET settings = ?
@@ -59,7 +57,7 @@ export class V2RayService {
 
       console.log('generating', r);
 
-      const r2 = this.db
+      const r2 = db
         .prepare(
           `INSERT INTO client_traffics
           (inbound_id, enable, email, up, down, expiry_time, total)
@@ -68,6 +66,8 @@ export class V2RayService {
         .run(inbound.id, clientName, trafficInGb * Math.pow(2, 30));
 
       console.log('generating', r2);
+
+      db.close();
 
       await this.restartXUI();
 
@@ -80,6 +80,9 @@ export class V2RayService {
 
   public async charge(configName: string, trafficInGb: number): Promise<Database.RunResult> {
     try {
+      const db = new BetterSqlite(SQLITE_FILE!, {fileMustExist: true});
+      db.pragma('journal_mode = WAL');
+
       const inboundName = configName.split('-')[0] + '-' + configName.split('-')[1];
       const email = configName.split('-')[2];
       const trafficInBytes = trafficInGb * Math.pow(2, 30);
@@ -90,13 +93,15 @@ export class V2RayService {
       const foundIdx = _.findIndex(settings.clients, {email: email});
 
       if (foundIdx === -1) {
+        db.close();
+
         throw new Error('Charge Inbound: Not found');
       }
 
       settings.clients[foundIdx].totalGB =
         settings.clients[foundIdx].totalGB + trafficInGb * Math.pow(2, 30);
 
-      const r = this.db
+      const r = db
         .prepare(
           `UPDATE inbounds
           SET settings = ?
@@ -105,7 +110,7 @@ export class V2RayService {
         .run(JSON.stringify(settings, null, 2), inbound.id);
       console.log('updating', r);
 
-      const r2 = this.db
+      const r2 = db
         .prepare(
           `UPDATE client_traffics
           SET enable = 1, total = total + ?
@@ -114,6 +119,8 @@ export class V2RayService {
         .run(trafficInBytes, email.toUpperCase());
 
       console.log('updating, r2');
+
+      db.close();
 
       if (r2.changes !== 0) {
         await this.restartXUI();
@@ -128,16 +135,21 @@ export class V2RayService {
 
   public async findClient(name: string): Promise<ClientTraffics> {
     try {
+      const db = new BetterSqlite(SQLITE_FILE!, {fileMustExist: true});
+      db.pragma('journal_mode = WAL');
+
       const email = name.split('-')[2];
       console.log(name, email);
       const res = <ClientTraffics[]>(
-        this.db
-          .prepare(`SELECT * FROM client_traffics WHERE UPPER(email)=?`)
-          .all(email.toUpperCase())
+        db.prepare(`SELECT * FROM client_traffics WHERE UPPER(email)=?`).all(email.toUpperCase())
       );
+
+      db.close();
+
       if (res.length) {
         return res[0];
       }
+
       throw new Error('Find Client: not found');
     } catch (err) {
       throw new Error('Find Client: not found');
@@ -146,9 +158,16 @@ export class V2RayService {
 
   public async findInbounds(name: string): Promise<Inbounds> {
     console.log(name);
+
+    const db = new BetterSqlite(SQLITE_FILE!, {fileMustExist: true});
+    db.pragma('journal_mode = WAL');
+
     const res = <Inbounds[]>(
-      this.db.prepare(`SELECT * FROM inbounds WHERE UPPER(remark)=?`).all(name.toUpperCase())
+      db.prepare(`SELECT * FROM inbounds WHERE UPPER(remark)=?`).all(name.toUpperCase())
     );
+
+    db.close();
+
     if (res.length) {
       return res[0];
     }
@@ -156,9 +175,12 @@ export class V2RayService {
   }
 
   public async deleteInbound(name: string): Promise<void> {
-    const res = this.db
-      .prepare(`DELETE FROM inbounds WHERE UPPER(remark)=?`)
-      .run(name.toUpperCase());
+    const db = new BetterSqlite(SQLITE_FILE!, {fileMustExist: true});
+    db.pragma('journal_mode = WAL');
+
+    const res = db.prepare(`DELETE FROM inbounds WHERE UPPER(remark)=?`).run(name.toUpperCase());
+
+    db.close();
 
     if (res.changes === 0) {
       throw new Error('Delete Inbound: not found');
