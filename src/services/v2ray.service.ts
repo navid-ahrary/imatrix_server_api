@@ -22,7 +22,6 @@ export class V2RayService {
   public async generate(clientName: string, trafficInGb: number): Promise<string> {
     try {
       const db = new BetterSqlite(SQLITE_FILE!, {fileMustExist: true});
-      db.pragma('journal_mode = WAL');
 
       console.log(`Generating ${clientName} ...`);
 
@@ -81,7 +80,6 @@ export class V2RayService {
   public async charge(configName: string, trafficInGb: number): Promise<Database.RunResult> {
     try {
       const db = new BetterSqlite(SQLITE_FILE!, {fileMustExist: true});
-      db.pragma('journal_mode = WAL');
 
       const inboundName = configName.split('-')[0] + '-' + configName.split('-')[1];
       const email = configName.split('-')[2];
@@ -136,7 +134,6 @@ export class V2RayService {
   public async findClient(name: string): Promise<ClientTraffics> {
     try {
       const db = new BetterSqlite(SQLITE_FILE!, {fileMustExist: true});
-      db.pragma('journal_mode = WAL');
 
       const email = name.split('-')[2];
       console.log(name, email);
@@ -160,7 +157,6 @@ export class V2RayService {
     console.log(name);
 
     const db = new BetterSqlite(SQLITE_FILE!, {fileMustExist: true});
-    db.pragma('journal_mode = WAL');
 
     const res = <Inbounds[]>(
       db.prepare(`SELECT * FROM inbounds WHERE UPPER(remark)=?`).all(name.toUpperCase())
@@ -176,7 +172,6 @@ export class V2RayService {
 
   public async deleteInbound(name: string): Promise<void> {
     const db = new BetterSqlite(SQLITE_FILE!, {fileMustExist: true});
-    db.pragma('journal_mode = WAL');
 
     const res = db.prepare(`DELETE FROM inbounds WHERE UPPER(remark)=?`).run(name.toUpperCase());
 
