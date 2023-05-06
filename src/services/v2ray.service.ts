@@ -96,14 +96,14 @@ export class V2RayService {
       settings.clients[foundIdx].totalGB =
         settings.clients[foundIdx].totalGB + trafficInGb * Math.pow(2, 30);
 
-      // const r = this.db
-      //   .prepare(
-      //     `UPDATE inbounds
-      //     SET settings = ?
-      //     WHERE id = ?`,
-      //   )
-      //   .run(JSON.stringify(settings, null, 2), inbound.id);
-      // console.log('updating', r);
+      const r = this.db
+        .prepare(
+          `UPDATE inbounds
+          SET settings = ?
+          WHERE id = ?`,
+        )
+        .run(JSON.stringify(settings, null, 2), inbound.id);
+      console.log('updating', r);
 
       const r2 = this.db
         .prepare(
