@@ -119,7 +119,7 @@ export class V2RayService {
         await this.restartXUI();
       }
 
-      return r;
+      return r2;
     } catch (err) {
       console.error(err.message);
       throw new Error(err.message);
