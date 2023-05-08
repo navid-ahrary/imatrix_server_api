@@ -29,6 +29,7 @@ export class V2RayService {
       const pbk = process.env.INBOUND_PUBLIC_KEY!;
       const inboundName = `${SERVER_NAME}-RE`;
       const inbound = await this.findInbounds(inboundName);
+      const traffic = Math.ceil(trafficInGb * Math.pow(2, 30));
 
       const settings = <Settings>JSON.parse(inbound.settings);
 
@@ -42,7 +43,7 @@ export class V2RayService {
           limitIp: 0,
           subId: '',
           tgId: '',
-          totalGB: trafficInGb * Math.pow(2, 30),
+          totalGB: traffic,
         }),
       );
 
@@ -62,7 +63,7 @@ export class V2RayService {
           (inbound_id, enable, email, up, down, expiry_time, total)
           VALUES (?, 1, ?, 0, 0, 0, ?)`,
         )
-        .run(inbound.id, clientName, trafficInGb * Math.pow(2, 30));
+        .run(inbound.id, clientName, traffic);
 
       console.log('generating', r2);
 
