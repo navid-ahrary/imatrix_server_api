@@ -1,14 +1,13 @@
 /* eslint-disable no-useless-catch */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {BindingScope, injectable} from '@loopback/core';
-import {default as BetterSqlite, default as Database} from 'better-sqlite3';
+import Database, {default as BetterSqlite} from 'better-sqlite3';
 import {exec} from 'child_process';
 import _ from 'lodash';
 import {v4 as uuidV4} from 'uuid';
 import {ClientTraffics, Clients, Inbounds} from '../models';
 
-const {TUNNEL_DOMAIN, TUNNEL_PORT, SQLITE_FILE, SERVER_NAME, INBOUND_PUBLIC_KEY, INBOUND_SHORTID} =
-  process.env;
+const {TUNNEL_DOMAIN, TUNNEL_PORT, SQLITE_FILE, SERVER_NAME} = process.env;
 
 interface Settings {
   clients: Clients[];
@@ -71,7 +70,7 @@ export class V2RayService {
 
       await this.restartXUI();
 
-      return `vless://${clientId}@${TUNNEL_DOMAIN}:${TUNNEL_PORT}?type=http&serviceName=&security=reality&fp=firefox&pbk=${INBOUND_PUBLIC_KEY}&sni=yahoo.com&sid=${INBOUND_SHORTID}#${inboundName}-${clientName}`;
+      return `vless://${clientId}@${TUNNEL_DOMAIN}:${TUNNEL_PORT}?type=http&path=%2Ffmi4mf394fl&host=&security=reality&fp=firefox&pbk=Sr4AUnriRCYqdPiQqZoJjn_MPLW7zoe3jMSUi4mKvB8&sni=yahoo.com&sid=e9013905&spx=%2Fm3f09f94fm%2C%3B#${inboundName}-${clientName}`;
     } catch (err) {
       console.error(err.message);
       throw new Error(err.message);
