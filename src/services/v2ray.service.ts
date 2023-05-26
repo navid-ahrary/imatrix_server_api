@@ -26,7 +26,7 @@ export class V2RayService {
       console.log(`Generating ${clientName} ...`);
 
       const clientId = uuidV4();
-      const inboundName = `${SERVER_NAME}-RE`;
+      const inboundName = `${SERVER_NAME}-H2`;
       const inbound = await this.findInbounds(inboundName);
       const traffic = Math.ceil(trafficInGb * Math.pow(2, 30));
 
