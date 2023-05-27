@@ -26,7 +26,7 @@ export class V2RayService {
       console.log(`Generating ${clientName} ...`);
 
       const clientId = uuidV4();
-      const inboundName = `${SERVER_NAME}-H2`;
+      const inboundName = `${SERVER_NAME}-TCP`;
       const inbound = await this.findInbounds(inboundName);
       const traffic = Math.ceil(trafficInGb * Math.pow(2, 30));
 
@@ -37,7 +37,7 @@ export class V2RayService {
           email: clientName,
           enable: true,
           expiryTime: 0,
-          flow: '',
+          flow: 'xtls-rprx-vision',
           id: clientId,
           limitIp: 0,
           subId: '',
@@ -47,11 +47,7 @@ export class V2RayService {
       );
 
       const r = db
-        .prepare(
-          `UPDATE inbounds
-          SET settings = ?
-          WHERE id = ?`,
-        )
+        .prepare(`UPDATE inbounds SET settings = ? WHERE id = ?`)
         .run(JSON.stringify(settings, null, 2), inbound.id);
 
       console.log('generating', r);
@@ -70,7 +66,7 @@ export class V2RayService {
 
       await this.restartXUI();
 
-      return `vless://${clientId}@${TUNNEL_DOMAIN}:${TUNNEL_PORT}?type=http&path=%2Ffmi4mf394fl&host=&security=reality&fp=firefox&pbk=Sr4AUnriRCYqdPiQqZoJjn_MPLW7zoe3jMSUi4mKvB8&sni=yahoo.com&sid=e9013905&spx=%2Fm3f09f94fm%2C%3B#${inboundName}-${clientName}`;
+      return `vless://${clientId}@${TUNNEL_DOMAIN}:${TUNNEL_PORT}?type=tcp&security=reality&fp=firefox&pbk=j6bS51haRH7KZMqHn69MHxv0qIBsx7oXZQfbHUBC-2k&sni=yimg.com&flow=xtls-rprx-vision&sid=17dcf3c9&spx=%2Fv48nv3uio4#${inboundName}-${clientName}`;
     } catch (err) {
       console.error(err.message);
       throw new Error(err.message);
