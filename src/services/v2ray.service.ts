@@ -32,19 +32,19 @@ export class V2RayService {
 
       const settings = <Settings>JSON.parse(inbound.settings);
 
-      settings.clients.push(
-        new Clients({
-          email: clientName,
-          enable: true,
-          expiryTime: 0,
-          flow: 'xtls-rprx-vision',
-          id: clientId,
-          limitIp: 0,
-          subId: '',
-          tgId: '',
-          totalGB: traffic,
-        }),
-      );
+      const client = new Clients({
+        email: clientName,
+        enable: true,
+        expiryTime: 0,
+        flow: 'xtls-rprx-vision',
+        id: clientId,
+        limitIp: 0,
+        subId: '',
+        tgId: '',
+        totalGB: traffic,
+      });
+      console.log(client);
+      settings.clients.push(client);
 
       const r = db
         .prepare(`UPDATE inbounds SET settings = ? WHERE id = ?`)
