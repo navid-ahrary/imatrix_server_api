@@ -14,7 +14,7 @@ export class Clients extends Model {
     type: 'string',
     required: true,
   })
-  flow = '';
+  flow: string;
 
   @property({
     type: 'string',
@@ -38,25 +38,25 @@ export class Clients extends Model {
     type: 'number',
     required: true,
   })
-  expiryTime = 0;
+  expiryTime: number;
 
   @property({
     type: 'boolean',
     required: true,
   })
-  enable = true;
+  enable: boolean;
 
   @property({
     type: 'string',
     required: true,
   })
-  tgId = '';
+  tgId: string;
 
   @property({
     type: 'string',
     required: true,
   })
-  subId = '';
+  subId: string;
 
   constructor(data?: Partial<Clients>) {
     super(data);

@@ -43,7 +43,7 @@ export class V2RayService {
         tgId: '',
         totalGB: traffic,
       });
-      console.log(client);
+
       settings.clients.push(client);
 
       const r = db
