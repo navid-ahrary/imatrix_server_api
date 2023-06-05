@@ -7,7 +7,7 @@ import _ from 'lodash';
 import {v4 as uuidV4} from 'uuid';
 import {ClientTraffics, Clients, Inbounds} from '../models';
 
-const {TUNNEL_DOMAIN, TUNNEL_PORT, SQLITE_FILE, SERVER_NAME} = process.env;
+const {TUNNEL_DOMAIN, TUNNEL_PORTS, SQLITE_FILE, SERVER_NAME} = process.env;
 
 interface Settings {
   clients: Clients[];
@@ -26,6 +26,9 @@ export class V2RayService {
       console.log(`Generating ${clientName} ...`);
 
       const clientId = uuidV4();
+      const port = JSON.parse(TUNNEL_PORTS!)[
+        Math.floor(Math.random() * JSON.parse(TUNNEL_PORTS!).length)
+      ];
       const inboundName = `${SERVER_NAME}-TCP`;
       const inbound = await this.findInbounds(inboundName);
       const traffic = Math.ceil(trafficInGb * Math.pow(2, 30));
@@ -66,7 +69,7 @@ export class V2RayService {
 
       await this.restartXUI();
 
-      return `vless://${clientId}@${TUNNEL_DOMAIN}:${TUNNEL_PORT}?type=tcp&security=reality&fp=firefox&pbk=j6bS51haRH7KZMqHn69MHxv0qIBsx7oXZQfbHUBC-2k&sni=yimg.com&flow=xtls-rprx-vision&sid=17dcf3c9&spx=%2Fv48nv3uio4#${inboundName}-${clientName}`;
+      return `vless://${clientId}@${TUNNEL_DOMAIN}:${port}?type=tcp&security=reality&fp=firefox&pbk=j6bS51haRH7KZMqHn69MHxv0qIBsx7oXZQfbHUBC-2k&sni=yimg.com&flow=xtls-rprx-vision&sid=17dcf3c9&spx=%2Fv48nv3uio4#${inboundName}-${clientName}`;
     } catch (err) {
       console.error(err.message);
       throw new Error(err.message);
